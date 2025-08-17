@@ -196,7 +196,7 @@ Stored in `scenarios/scenarios.yaml`:
 
 ## 👨‍💻 Authors
 
-* **Your Name** – Hackathon Participant
+* **Giriraj Parsewar** – GrabHack: Campus Edition Participant
 
 ---
 
