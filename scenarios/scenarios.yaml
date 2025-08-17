@@ -1,0 +1,28 @@
+- id: "overloaded-restaurant"
+  text: "Order delayed because restaurant is overloaded"
+  goal: "Reduce driver wait and inform customer"
+  constraints:
+    - "Always notify customer"
+  world:
+    merchant: { id: "M45" }
+    order: { id: "A123" }
+
+- id: "recipient-unavailable"
+  text: "Recipient not available to collect package"
+  goal: "Deliver securely without doorstep drop"
+  constraints:
+    - "High-value parcel"
+  world:
+    package: { id: "PX9" }
+
+
+- id: "traffic"
+  text: "Passenger on urgent trip to airport, but traffic accident blocks route."
+  goal: "Get passenger to airport on time."
+  constraints:
+    - "Minimize delay"
+    - "Keep passenger informed"
+  world:
+    driver: { id: "D10" }
+    passenger: { id: "P77" }
+    route: { blocked: true }
