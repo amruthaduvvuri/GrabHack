@@ -2,27 +2,26 @@
 
 ## 📌 Overview
 
-Project Synapse is a **proof-of-concept AI agent** designed for the **Grab Hackathon**. It acts as an **intelligent coordinator** for last-mile delivery disruptions by simulating logistics APIs and reasoning step by step to resolve real-world issues like traffic delays, unavailable recipients, or overloaded merchants.
+Project Synapse is a proof-of-concept AI agent designed for the Grab Hackathon. It acts as an intelligent coordinator for last-mile delivery disruptions by simulating logistics APIs and reasoning step by step to resolve real-world issues like traffic delays, unavailable recipients, or overloaded merchants.
 
-The agent follows a **Plan → Act → Observe → Reflect loop**, deciding which tools to use, observing results, and generating a final resolution.
+The agent follows a **Plan → Act → Observe → Reflect** loop, deciding which tools to use, observing results, and generating a final resolution.
 
 * If OpenAI API is available (with quota), the agent uses an **LLM-powered planner**.
 * If quota is exceeded or offline, it automatically falls back to a **Rule-based planner**.
-
-This ensures the system is **robust and always demo-ready**.
+* This ensures the system is robust and always demo-ready.
 
 ---
 
-## ⚡ Features
+## ⚡ Features (Round 1)
 
-* **Handles multiple disruption scenarios**
+* Handles multiple disruption scenarios:
 
   * 🍔 Overloaded Restaurant (GrabFood/GrabMart)
   * 📦 Recipient Unavailable (GrabExpress)
   * 🚦 Traffic Obstruction (GrabCar)
-* **Step-by-step reasoning trace** printed to console
-* **Hybrid Planner**: OpenAI GPT + Rule-based fallback
-* **Tool simulation** (mock APIs):
+* Step-by-step reasoning trace printed to console
+* Hybrid Planner: OpenAI GPT + Rule-based fallback
+* Tool simulation (mock APIs):
 
   * `get_merchant_status()`
   * `notify_customer()`
@@ -35,12 +34,47 @@ This ensures the system is **robust and always demo-ready**.
 
 ---
 
+## 🆕 Round 2 Enhancements
+
+For the **Detailed Submission Round**, we extended the system with a **working frontend demo** and API-based backend integration:
+
+* **FastAPI Backend Layer**
+
+  * Added `api.py` exposing endpoints:
+
+    * `POST /simulate/traffic`
+    * `POST /simulate/restaurant`
+    * `POST /simulate/recipient`
+  * Backend wraps the agent logic and returns structured JSON responses with `decision`, `notification`, `steps`, `timestamp`, and `severity`.
+
+* **React + Vite + Tailwind Frontend**
+
+  * Interactive dashboard (single page app) built in `App.tsx`.
+  * Features:
+
+    * Sidebar with simulation controls (trigger disruptions).
+    * Event log with recent actions.
+    * AI decision steps panel with severity levels.
+    * Customer Notification & Driver Update panels.
+    * Map placeholder for driver route visualization.
+  * API integrated: frontend buttons call backend endpoints in real time.
+
+* **Updated Demo Flow**
+
+  * User clicks disruption button in UI.
+  * Backend agent processes scenario.
+  * UI displays:
+
+    * Real-time steps taken by agent.
+    * Final decision + notification.
+    * Customer & driver updates.
+
+---
+
 ## 🛠️ Tech Stack
 
-* Python 3.10+
-* [OpenAI API](https://platform.openai.com/) (LLM)
-* [PyYAML](https://pyyaml.org/) (scenario configs)
-* [python-dotenv](https://github.com/theskumar/python-dotenv) (API key management)
+* **Backend**: Python 3.10+, FastAPI, Uvicorn, PyYAML, OpenAI API (optional), dotenv
+* **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, lucide-react (icons)
 
 ---
 
@@ -48,20 +82,38 @@ This ensures the system is **robust and always demo-ready**.
 
 ```
 project-synapse/
-│── agent/
-│   ├── controller.py   # agent loop (Plan → Act → Observe)
-│   ├── llm.py          # OpenAI planner + Rule-based fallback
-│   ├── state.py        # Agent state + ToolEvent dataclass
-│   ├── tools.py        # Simulated logistics tools
-│   └── __init__.py
 │
-│── scenarios/
-│   └── scenarios.yaml  # Scenario definitions (restaurant, traffic, etc.)
+├── backend/
+│   ├── agent/
+│   │   ├── controller.py       # agent loop (Plan → Act → Observe)
+│   │   ├── llm.py              # OpenAI planner + Rule-based fallback
+│   │   ├── state.py            # Agent state + ToolEvent dataclass
+│   │   ├── tools.py            # Simulated logistics tools
+│   │   └── __init__.py
+│   │
+│   ├── scenarios/
+│   │   └── scenarios.yaml      # Scenario definitions
+│   │
+│   ├── runner.py               # Wrapper for running scenarios
+│   ├── api.py                  # FastAPI server
+│   ├── main.py                 # CLI entry point
+│   └── requirements.txt        # Python dependencies
 │
-│── main.py             # CLI entry point
-│── README.md           # Documentation
-│── requirements.txt    # Python dependencies
-│── .gitignore          # Ignore venv, __pycache__, .env
+├── frontend/
+│   ├── src/
+│   │   ├── App.tsx             # Dashboard UI (single-page app)
+│   │   ├── main.tsx            # React root
+│   │   ├── index.css           # Tailwind base styles
+│   │   └── vite-env.d.ts
+│   │
+│   ├── index.html
+│   ├── package.json
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   └── vite.config.ts
+│
+├── README.md
+└── .gitignore
 ```
 
 ---
@@ -75,128 +127,62 @@ git clone https://github.com/<your-username>/project-synapse.git
 cd project-synapse
 ```
 
-### 2. Setup Virtual Environment
+### 2. Setup Backend
 
 ```bash
+cd backend
 python -m venv venv
-# Activate venv
-venv\Scripts\activate   # Windows
-source venv/bin/activate  # Mac/Linux
-```
-
-### 3. Install Dependencies
-
-```bash
+source venv/bin/activate   # Mac/Linux
+venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 ```
 
-### 4. Add API Key (optional)
-
-Create a `.env` file:
-
-```
-OPENAI_API_KEY=sk-xxxxxxx
-```
-
-If no quota → system automatically falls back to RulePlanner.
-
-### 5. Run Scenarios
+Start API:
 
 ```bash
-python main.py --scenario overloaded-restaurant
-python main.py --scenario recipient-unavailable
-python main.py --scenario traffic
+uvicorn api:app --reload --port 8000
 ```
+
+### 3. Setup Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open browser → `http://localhost:5173`
 
 ---
 
-## 🧪 Example Outputs
+## 🧪 Example Demo Flow
 
-### 🍔 Overloaded Restaurant
-
-```
-[STEP 1] Check restaurant status.
-→ Action: get_merchant_status({'merchant_id': 'M45'})
-← Observation: {"merchant_id": "M45", "prep_time_min": 40, "status": "overloaded"}
-
-[FINAL] Resolved by notifying customer and re-routing driver.
-
-=== Final Resolution ===
-{"customer": "Notified of delay", "driver": "Re-routed"}
-```
-
-### 📦 Recipient Unavailable
-
-```
-[FINAL] Recipient unavailable, placed in locker.
-
-=== Final Resolution ===
-{"package": "Stored in nearby locker"}
-```
-
-### 🚦 Traffic Obstruction
-
-```
-[STEP 1] Check traffic conditions on current route.
-→ Action: check_traffic({'route_id': 'R1'})
-← Observation: {"route_id": "R1", "status": "blocked", "delay_min": 25}
-
-[FINAL] Traffic obstruction resolved with alternative route and passenger update.
-
-=== Final Resolution ===
-{"passenger": "Notified of new ETA", "driver": "Given alternative route"}
-```
+* User clicks **Simulate Traffic Obstruction** → API returns reroute decision.
+* Event log shows step-by-step reasoning.
+* Notifications show updated ETA for customer + reroute for driver.
+* Map panel highlights disruption (static placeholder for now).
 
 ---
 
 ## 📖 Scenario Definitions
 
-Stored in `scenarios/scenarios.yaml`:
-
-```yaml
-- id: "overloaded-restaurant"
-  text: "Order delayed because restaurant is overloaded"
-  goal: "Reduce driver wait and inform customer"
-  constraints:
-    - "Always notify customer"
-  world:
-    merchant: { id: "M45" }
-    order: { id: "A123" }
-
-- id: "recipient-unavailable"
-  text: "Recipient not available to collect package"
-  goal: "Deliver securely without doorstep drop"
-  constraints:
-    - "High-value parcel"
-  world:
-    package: { id: "PX9" }
-
-- id: "traffic"
-  text: "Passenger on urgent trip to airport, but traffic accident blocks route."
-  goal: "Get passenger to airport on time."
-  constraints:
-    - "Minimize delay"
-    - "Keep passenger informed"
-  world:
-    driver: { id: "D10" }
-    passenger: { id: "P77" }
-    route: { blocked: true }
-```
+(unchanged from Round 1, stored in `scenarios/scenarios.yaml`)
 
 ---
 
 ## 📜 Future Extensions
 
-* Add **Damaged Packaging Dispute** scenario with real-time mediation.
-* Integrate **LangGraph** for more robust agent orchestration.
-* Add **policy memory** (refund rules, SLA) from vector DB.
-* Provide **web-based demo** with Streamlit.
+* Add Damaged Packaging Dispute scenario with real-time mediation.
+* Integrate LangGraph for more robust agent orchestration.
+* Add policy memory (refund rules, SLA) from vector DB.
+* Expand map into live visualization with Leaflet.js or Google Maps API.
+* Deploy backend on cloud (e.g., Render/Heroku) for live demo links.
 
 ---
 
 ## 👨‍💻 Authors
 
-* **Giriraj Parsewar** – GrabHack: Campus Edition Participant
+Giriraj Parsewar – GrabHack: Campus Edition Participant
 
 ---
 
